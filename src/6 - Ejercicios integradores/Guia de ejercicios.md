@@ -188,3 +188,131 @@ De no haber una unidad en la posición especificada, no se debe hacer nada.
 - En los tests se utiliza un area del mapa de 5x5 lugares para simplificar la visualización, pero es importante que se resuelva correctamente para el mapa completo.
 - Para cada función se incluye un último test que sí trabaja sobre un mapa de tamaño máximo. Este test no correrá hasta que los anteriores pasen exitosamente.
 - A fin de debuggear puede ser útil revisar la función de hash utilizada en los tests, la cual está definida al principio de `test.c`.
+
+# Ejercicio 3
+
+Un prestigioso banco de los Estados Unidos, el **Orga2-Morgan**, nos solicitó ayuda para procesar sus colas de atención al cliente. Poder priorizar los casos es de suma importancia para el banco, ya que si los usuarios dejan buenas reseñas, les resulta más fácil atraer nuevos clientes.
+
+El equipo de IT del banco nos brinda las siguientes estructuras:
+
+## Estructura: Caso
+
+```
+typedef struct {
+	char[3] categoria;
+	uint16_t estado;
+	usuario_t* usuario;
+} caso_t;
+```
+
+Esta estructura representa un caso. Contiene:
+
+- `categoria`: puede ser `"CLT"`, `"RBO"`, `"KSC"` o `"KDT"`.
+- `estado`: puede tomar los valores:
+  - `0`: caso abierto
+  - `1`: cerrado favorablemente
+  - `2`: cerrado desfavorablemente
+- `usuario`: puntero a un usuario asociado al caso.
+
+## Estructura: Usuario
+
+```
+typedef struct {
+	uint32_t id;
+	uint32_t nivel;
+} usuario_t;
+```
+
+Donde:
+
+- `id`: identificador único del usuario.
+- `nivel`: puede ser `0`, `1` o `2`, representando el nivel de prioridad del cliente.
+
+---
+
+## Ejercicio 3a
+
+La primer funcionalidad que nos solicitaron es poder segmentar los casos según el nivel del usuario, para así poder priorizar la atención en función de la importancia de cada cliente para la compañía.
+
+La firma de la función a implementar es:
+
+```
+segmentacion_t* segmentar_casos(caso_t* arreglo_casos, int largo)
+```
+
+Donde:
+
+```
+typedef struct {
+	caso_t* casos_nivel_0;
+	caso_t* casos_nivel_1;
+	caso_t* casos_nivel_2;
+} segmentacion_t;
+```
+Que dada una lista de casos, los ordene de acuerdo al nivel de prioridad del usuario que lo abrió. El parametro `largo` indica la longitud del arreglo pasado por parametro. La estructura retornada no debe utilizar más memoria de la necesaria.
+
+> 💡 **Sugerencia**: puede ser útil comenzar implementando una función auxiliar como:
+> 
+> ```
+> int contar_casos_por_nivel(caso_t* arreglo_casos, int largo, int nivel)
+> ```
+
+> ⚠️ **Importante**: asegurarse de que los *offsets* estén correctamente definidos y utilizados.
+
+---
+
+## Ejercicio 3b
+
+El segundo requerimiento consiste en implementar una funcionalidad de cierre automático de casos utilizando inteligencia artificial, con el objetivo de reducir costos operativos.
+
+El equipo de Machine Learning de Orga2-Morgan (liderado por el prestigioso científico **Satoshi Nakamoto**) proveerá una función que, dado un caso, indicará si puede cerrarse automáticamente o no.
+
+La función a implementar es:
+
+```
+void resolver_automaticamente(funcionCierraCasos* funcion, caso_t* arreglo_casos, caso_t* casos_a_revisar, int largo)
+```
+
+### Lógica a implementar
+
+- Para los casos de usuarios de nivel `1` o `2`:
+  - Llamar a `funcionCierraCasos` que recibe un caso y retorna 0 o 1.
+  - Si el resultado es `1`, el caso se puede cerrar automáticamente, marcándolo como cerrado favorablemente (`estado = 1`).
+  - Si el resultado es `0` y la categoría del caso es `"CLT"` o `"RBO"`, el caso se puede cerrar automáticamente, marcando el caso como cerrado desfavorablemente (`estado = 2`).
+  - En otros casos, el caso no se puede cerrar automáticamente por lo que no se debe modificar el estado.
+
+- Para los casos de usuarios de nivel `0`, no se realiza ninguna acción (no se pueden cerrar automáticamente).
+- Además, se solicita que los casos en los que no se tomo accion, es decir los que no se cerraron automáticamente, sean agregados al arreglo `casos_a_revisar` pasado por parámetro. 
+
+> 🛠️ **Tip**: para comparar strings se puede utilizar la función `strncmp(char* str1, char* str2, size_t n)` de la biblioteca `string.h`. Notar que el campo categoría no termina con '\0'!
+
+> 🛠️ **Tip**: se puede asumir que el arreglo `casos_a_revisar` tiene tamaño suficiente y está inicializado con todas sus posiciones en 0.
+
+---
+
+## Ejercicio 3c
+
+Por último nos pidieron implementar una función que calcule estadísticas. 
+
+```
+estadisticas_t* calcular_estadisticas(caso_t* arreglo_casos, int largo, uint32_t usuario_id);
+```
+
+Donde:
+
+```
+typedef struct {
+	uint8_t cantidad_CLT;
+	uint8_t cantidad_RBO;
+	uint8_t cantidad_KSC;
+	uint8_t cantidad_KDT;
+	uint8_t cantidad_estado_0;
+	uint8_t cantidad_estado_1;
+	uint8_t cantidad_estado_2;
+} estadisticas_t; 
+
+```
+
+Que dada una lista de casos y un id de usuario
+- Si `usuario_id != 0`: cuente la cantidad de casos de cada categoría y estado que pertenezcan al usuario dado.
+- Si `usuario_id = 0`, contabilizará el total de los casos sin importar el usuario al que pertenezcan. 
