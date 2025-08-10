@@ -316,3 +316,269 @@ typedef struct {
 Que dada una lista de casos y un id de usuario
 - Si `usuario_id != 0`: cuente la cantidad de casos de cada categoría y estado que pertenezcan al usuario dado.
 - Si `usuario_id = 0`, contabilizará el total de los casos sin importar el usuario al que pertenezcan. 
+
+# Ejercicio 4
+
+La cátedra está trabajando en un innovador juego de cartas llamado Ah-Yi-Ok! donde dos jugadores podrán batallar por turnos utilizando mazos de 40 cartas que representan monstruos u otras trampas situacionales.
+Cada jugador comienza con 8000 puntos de vida que irán disminuyendo a medida que el jugador contrario lo ataque utilizando monstruos y otras trampas.
+La partida termina cuando la vida de un jugador llega a 0 o alguno de los jugadores no tiene más cartas en su mazo.
+
+Las partidas (batallas) se desarrollan en turnos sucesivos, donde los jugadores ponen en juego los distintos monstruos y trampas con los que dañar a su contrincante.
+Para hacer daño, **los monstruos tienen una o más habilidades** que pueden activar una vez por turno siempre que se encuentren en juego, es decir en la mesa, boca arriba.
+
+Actualmente, la cátedra busca implementar las cartas monstruo.
+
+## Las cartas monstruo
+Todos los monstruos de nuestro juego pertenecen a algún **arquetipo**.
+Cada arquetipo está compuesta de cartas genéricas y de "jefes" de mayor valor.
+Todas las cartas del arquetipo cuentan con una o más **habilidades en común** correspondientes al arquetipo.
+Además, las cartas de tipo "jefe" cuentan con una o más **habilidades especiales** adicionales a las habilidades en común del arquetipo.
+
+Queremos implementar cartas que pertenecen al arquetipo *Fantastruco*. Una de las habilidades en común del arquetipo es que todas sus cartas pueden "irse a dormir" (habilidad `sleep`).
+Cuando se ejecuta la habilidad `sleep`, la carta queda boca abajo hasta el comienzo del próximo turno, lo cual la protege de ciertas habilidades enemigas pero evita que pueda invocar otras de sus propias habilidades.
+
+Alucard y Ángel son jefes del arquetipo *Fantastruco*, por lo que además de la habilidades especiales mencionadas en sus correspondientes descripciones, tienen implícita la habilidad en común `sleep` que se encuentra en la descripción de la carta genérica *Fantastruco*.
+
+![Cartas Fantastruco](img/cartas_fantastruco_esp.png)
+
+## Ejercicio 4a
+Ya está implementado el tipo de las cartas básicas del arquetipo *Fantastruco*, las cuales tienen la habilidad en común `sleep` (irse a dormir).
+Para poder implementar dicha habilidad, **todas las cartas del arquetipo** instancian un struct `fantastruco_t` que contiene el atributo `bool face_up` que indica si la carta está boca arriba (1) o no (0).
+```c
+typedef struct {
+	directory_t __dir;
+	uint16_t __dir_entries;
+	void* __archetype; //Es NULL
+	bool face_up;
+} fantastruco_t;
+```
+
+En el atributo `__dir` se encuentra un directorio de las habilidades implementadas por la carta.
+Dicho directorio se compone de entradas de tipo `directory_entry_t` que contienen el nombre de la habilidad implementada y un puntero a la función que ejecuta dicha habilidad.
+
+El atributo `__dir_entries` indica cuántas entradas hay en el directorio.
+Por ejemplo, si un monstruo genérico fantastruco implementa dos habilidades del arquetipo, `sleep` y `wakeup`, `__dir_entries = 2` indicando que hay dos `directory_entry_t`.
+
+```c
+typedef directory_entry_t** directory_t; //pista: atención a esta definición
+
+typedef struct {
+	char ability_name[10]; //pista: atención al tipo de este atributo !!!
+	void* ability_ptr;
+} directory_entry_t;
+```
+
+![Directorio habilidades en carta genérica fantastruco](img/directorio.png)
+
+Resolver:
+1. **Implementar en ASM la función** `void init_fantastruco_dir(fantastruco_t* card)` que inicialice los atributos `__dir` y `__dir_entries` de la carta pasada por parámetro. Se debe incluir en el directorio entradas para las habilidades `sleep` y `wakeup`, que están implementadas en `fantastruco.c`
+2. **Implementar en ASM la función** `fantastruco_t* summon_fantastruco()` que devuelve un puntero a una carta fantastruco genérica con todos sus atributos inicializados apropiadamente. La carta debe ser creada boca arriba (`face_up = 1`) y con el atributo `__archetype = NULL`.
+
+> [!IMPORTANT]
+> El tester liberará la memoria devuelta por esta función.
+
+> [!CAUTION]
+> Para crear las entradas del directorio, **se provee la siguiente función** en el archivo `fantastruco.c`:
+> ```c
+> directory_entry_t* create_dir_entry(char* ability_name, void* ability_ptr)
+> ```
+
+**Recomendación:** antes de implementar, graficar qué pinta tiene la estructura directorio para las cartas genéricas de tipo `fantastruco_t`.
+
+## Ejercicio 4b
+Ahora que tenemos un directorio indicando qué habilidades son implementadas por cada carta, queremos crear una función que nos permita invocar alguna habilidad de un monstruo pasado por parámetro.
+
+Para un monstruo genérico fantastruco, por ejempo, invocar la habilidad `sleep` es sencillo: buscamos en el directorio de la carta la entrada con `ability_name = sleep` y llamamos a la función apuntada en `ability_ptr`.
+
+Para un monstruo de tipo jefe, sin embargo, esto podría ser más complejo. Observemos en detalle a **Alucard**, uno de los jefes del arquetipo, que tiene la habilidad especial `destroy`.
+
+Para empezar, el struct que representa a las cartas Alucard es el siguiente:
+```c
+typedef struct {
+	directory_t __dir;
+	uint16_t __dir_entries;
+	fantastruco_t* __archetype; //Apunta a una instancia asociada de tipo fantastruco_t (el arquetipo)
+	uint32_t materials; //Usados por la habilidad destroy
+} alucard_t;
+```
+
+Para permitir que Alucard (y cualquier otro jefe del arquetipo) pueda usar tanto la habilidad del arquetipo `sleep` como su habilidad especial `destroy`, al crear una instancia de Alucard se inicializa también una instancia de `fantastruco_t`, y se guarda un puntero a esta instancia en el atributo `__archetype` del jefe.
+
+El directorio de Alucard solamente contiene su habilidad especial `destroy`; mientras que por su parte las habilidades que comparte con el resto del arquetipo (`sleep` y `wakeup`) están guardadas en el directorio de la instancia `fantastruco_t`.
+
+De esta manera, si queremos invocar la habilidad `sleep` de Alucard, procedemos del siguiente modo: buscamos la habilidad con nombre `sleep` en el directorio de la instancia con tipo `alucard_t`. No la encontramos, así que buscamos la habilidad `sleep` en el directorio de la instancia de su arquetipo (que teníamos apuntada en `__archetype`). Ahí la encontramos y la llamamos, pasando como argumento **el puntero de la carta donde estaba implementada la habilidad** (en este caso de tipo `fantastruco_t*`).
+
+> [!IMPORTANT]
+> Distintas cartas tienen distintas propiedades: un `fantastruco_t*` tiene `face_up` mientras que un `alucard_t*` tiene `materials`. Es importante sólo acceder a sus atributos en común (`__dir`, `__dir_entries`, `__archetype`). Si realizan la implementación en C deben acceder a estos campos por medio del tipo `card_t`.
+> ```c
+> typedef struct {
+> 	directory_t __dir;
+> 	uint16_t __dir_entries;
+> 	void* __archetype;
+> } card_t;
+> ```
+
+![Imagen mostrando proceso de invocación de habilidad](img/invocar_habilidad.png)
+
+Resolver:
+1. **Implementar la siguiente función en ASM:**
+
+```c
+void invocar_habilidad(void* generic_card, char* ability_name);
+```
+Vale asumir que `generic_card` siempre es al menos de tipo `card_t*`
+
+Cuyo algoritmo es el siguiente:
+
+1. Si la habilidad está implementada por la carta actual (se encuentra una con el nombre pasado por parámetro en el directorio), se llama a la implementación correspondiente.
+2. Si la habilidad no está implementada por la carta actual, se revisa si está implementada en su arquetipo
+3. Si la habilidad está implementada en su arquetipo, llama a dicha implementación
+4. De no ser el caso, revisará en el arquetipo de dicha carta (el arquetipo de una carta podría tener a su vez un arquetipo, y así) hasta llegar a una carta que:
+   1. tenga la implementación (en cuyo caso se llama) o
+   2. no tenga arquetipo asociado a quien consultar (en cuyo caso se termina la ejecución sin realizar nada).
+
+> **Nota**: Los llamados a habilidades toman siempre como parámetro un puntero a la carta donde se "encontró" la habilidad (un puntero a una instancia de tipo `alucard_t` para `destroy`, o de tipo `fantastruco_t` para `sleep`, por ejemplo)
+
+> 🛠️ **Tip**: Para comparar strings se puede utilizar la función `strcmp(char* str1, char* str2)` de la librería `string.h`.
+
+---
+
+Como nota de color, podríamos pensar a Alucard como una subclase de Fantastruco, de modo que los llamados a habilidades compartidas aplican polimorfismo.
+Se puede leer más sobre polimorfismo y sobre una posible implementación real en C en la siguiente página:
+https://icarus.cs.weber.edu/~dab/cs1410/textbook/12.Polymorphism/implementing.html
+
+La implementación que realizamos está vagamente inspirada en el concepto, pero deberíamos agregar mecanismos de compilación para crear una implementación verdadera donde llamar `alucard->sleep()` directamente invoque la función de la clase padre, por ejemplo.
+
+# Ejercicio 5
+
+La cátedra continúa trabajando en su juego de cartas Ah-Yi-Ok!, en el cual se enfrentan dos jugadores.
+En este juego, cada jugador cuenta con una mano de cartas que irán colocando en un tablero de 10x5 espacios para activar las distintas acciones asociadas a las cartas.
+
+```c
+#define ANCHO_CAMPO 10
+#define ALTO_CAMPO 5
+```
+
+Cada carta tiene un nombre, un dueño y una cantidad de puntos de vida.
+Una carta puede estar en el campo de juego pero no estar en juego aún (se encuentra desactivada temporalmente o nunca se activó).
+
+```c
+typedef struct carta {
+	bool en_juego;
+	char nombre[12];
+	uint16_t vida;
+	uint8_t jugador;
+} carta_t;
+```
+
+Participan del juego dos jugadores humanos: el jugador rojo y el jugador azul.
+Además, el sistema del juego puede incorporar jugadores simulados (no-humanos) adicionales que también poseen la capacidad de colocar cartas en el tablero.
+
+```c
+#define JUGADOR_ROJO 1
+#define JUGADOR_AZUL 2
+```
+
+Cada jugador cuenta con una "mano" de cartas de las cuales colocar las que desee en el campo de juego.
+Los jugadores no-humanos **no** tienen una "mano".
+
+```c
+typedef struct tablero {
+	carta_t* mano_jugador_rojo;
+	carta_t* mano_jugador_azul;
+	carta_t* campo[ALTO_CAMPO][ANCHO_CAMPO];
+} tablero_t;
+```
+
+Los jugadores pueden decidir utilizar distintas acciones entre las de sus cartas en juego.
+Cada acción tiene asociadas una **pieza de código**, una carta **destino** afectada por la acción, y una acción **siguiente** a ella.
+Los punteros nulos se interpretan como la acción "fin del turno".
+
+```c
+typedef void accion_fn_t(tablero_t* tablero, carta_t* carta);
+
+typedef struct accion {
+	accion_fn_t* invocar;
+	carta_t* destino;
+	struct accion* siguiente;
+} accion_t;
+```
+
+Nos interesa implementar tres funciones.
+
+### Offsets
+
+Completar los offets y tamaños de struct definidos en el archivo `solucion.asm`. 
+Para validar este ejercicio pueden correr `make check_offsets`.
+```nasm
+carta.en_juego EQU NO_COMPLETADO
+carta.nombre   EQU NO_COMPLETADO
+carta.vida     EQU NO_COMPLETADO
+carta.jugador  EQU NO_COMPLETADO
+carta.SIZE     EQU NO_COMPLETADO
+
+tablero.mano_jugador_rojo EQU NO_COMPLETADO
+tablero.mano_jugador_azul EQU NO_COMPLETADO
+tablero.campo             EQU NO_COMPLETADO
+tablero.SIZE              EQU NO_COMPLETADO
+
+accion.invocar   EQU NO_COMPLETADO
+accion.destino   EQU NO_COMPLETADO
+accion.siguiente EQU NO_COMPLETADO
+accion.SIZE      EQU NO_COMPLETADO
+```
+
+- Las definiciones con el prefijo `carta` corresponden a la estructura `carta_t`
+- Las definiciones con el prefijo `tablero` corresponden a la estructura `tablero_t`
+- Las definiciones con el prefijo `accion` corresponden a la estructura `accion_t`
+- Las definiciones con el sufijo `SIZE` corresponden a el tamaño de la estructura es cuestión
+- Las definiciones que no poseen el sufijo `SIZE` corresponden al offset del campo en cuestión
+
+## Ejercicio 5a - `hay_accion_que_toque`
+
+Dada una secuencia de acciones determinar si hay alguna cuya carta tenga un nombre idéntico (mismos contenidos, no mismo puntero) al pasado por parámetro.
+```c
+bool hay_accion_que_toque(accion_t* accion, char* nombre);
+```
+
+El resultado es un valor booleano, la representación de los booleanos de C es la siguiente:
+- El valor `0` es `false`
+- Cualquier otro valor es `true`
+
+## Ejercicio 5b - `invocar_acciones`
+
+Dada una secuencia de acciones, invocarlas en orden en caso de que las reglas del juego lo permitan.
+```c
+void invocar_acciones(accion_t* accion, tablero_t* tablero);
+```
+
+Una acción debe ser invocada **sí y sólo sí** la carta a la que está destinada la acción se encuentra en juego.
+Luego de invocarse una acción, su carta destino debe pasar a estar fuera de juego si sus puntos de vida son 0.
+
+Las funciones que implementan acciones de juego tienen la siguiente firma:
+```c
+void mi_accion(tablero_t* tablero, carta_t* carta);
+```
+- El tablero a utilizar es el pasado como parámetro
+- La carta a utilizar es la carta destino de la acción (`accion->destino`)
+
+Las acciones se deben invocar en el orden natural de la secuencia (primero la primera acción, segundo la segunda acción, etc). Las acciones asumen este orden de ejecución.
+
+Se deben tener en cuenta las siguientes consideraciones:
+- Una carta con 0 puntos de vida puede estar en juego *antes* de invocarse una acción.
+- Una carta puede pasar a estar fuera de juego por razones ajenas a sus puntos de vida (tal vez la acción la pone a dormir).
+- Una carta que tiene cero puntos de vida *después* de invocarse su acción *sí o sí* pasa a estar fuera de juego (independientemente de si antes tenía 0 puntos o no).
+
+## Ejercicio 5c - `contar_cartas`
+
+Contar la cantidad de cartas en el tablero correspondientes a cada uno de los jugadores.
+
+```c
+void contar_cartas(tablero_t* tablero, uint32_t* cant_rojas, uint32_t* cant_azules);
+```
+
+Se deben tener en cuenta las siguientes consideraciones:
+- Además del jugador rojo y el jugador azul puede haber cartas asociadas a otros jugadores simulados (no-humanos).
+- Las posiciones libres del campo tienen punteros nulos en lugar de apuntar a una carta.
+- El resultado debe ser escrito en las posiciones de memoria proporcionadas como parámetro.
+- El conteo incluye tanto a las cartas en juego cómo a las fuera de juego (siempre que estén visibles en el campo).
