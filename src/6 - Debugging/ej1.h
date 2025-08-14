@@ -1,12 +1,7 @@
 #pragma once
 #include <stdbool.h>
 #include <stdint.h>
-
-typedef struct {
-	char nombre[9];
-	uint32_t id;
-	uint32_t cantidad;
-} item_t;
+#include "structs.h" //define estructuras de datos de los ejercicios
 
 // Marca el ejercicio 1A como hecho (`true`) o pendiente (`false`).
 extern bool EJERCICIO_1_HECHO;

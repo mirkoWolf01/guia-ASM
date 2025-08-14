@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../test_utils/test-utils.h"
+#include "../test-utils.h"
 #include "ej1.h"
 
 int main(int argc, char* argv[]) {

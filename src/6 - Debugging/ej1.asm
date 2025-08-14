@@ -11,11 +11,12 @@ FALSE EQU 0
 ; Marca un ejercicio como hecho
 TRUE  EQU 1
 
-ID_OFFSET EQU 16
-CANTIDAD_OFFSET EQU 24
+ITEM_OFFSET_NOMBRE EQU 9
+ITEM_OFFSET_ID EQU 16
+ITEM_OFFSET_CANTIDAD EQU 24
 
-POINTER_SIZE EQU 64
-UINT32_SIZE EQU 32
+POINTER_SIZE EQU 4
+UINT32_SIZE EQU 8
 
 ; Marcar el ejercicio como hecho (`true`) o pendiente (`false`).
 
@@ -29,7 +30,7 @@ global EJERCICIO_3_HECHO
 EJERCICIO_3_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
 
 global EJERCICIO_4_HECHO
-EJERCICIO_4_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_4_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
 
 global ejercicio1
 ejercicio1:
@@ -42,8 +43,8 @@ ejercicio1:
 
 global ejercicio2
 ejercicio2:
-	mov [rdi+ID_OFFSET], rsi
-	mov [rdi+CANTIDAD_OFFSET], rdx
+	mov [rdi+ITEM_OFFSET_ID], rsi
+	mov [rdi+ITEM_OFFSET_CANTIDAD], rdx
 	call strcpy 
 	ret
 

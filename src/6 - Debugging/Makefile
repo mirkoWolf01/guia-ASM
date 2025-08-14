@@ -1,75 +1,54 @@
-AS = nasm
-ASFLAGS = -felf64 -Fdwarf -g
-LDFLAGS = -lm
-CFLAGS= -Wall -Wextra -Wno-pedantic -O0 -g -Wno-unused-function -Wno-unused-variable -Wno-unused-parameter -no-pie -z noexecstack -I ../../test_utils/
-VPATH=.:../../test_utils
-STRUCTS_FILE=ej1.h
-STRUCTS_PATH="../src/ej1"
-# Crea los binarios en cuestión
-all: test_c test_asm test_abi
+CC=cc
+CFLAGS= -std=c11 -Wall -Wextra -pedantic -O0 -g -lm -Wno-unused-variable -Wno-unused-parameter -no-pie -z noexecstack -I ../
+NASM=nasm
+NASMFLAGS=-f elf64 -g -F DWARF
+NASM_ABI_FLAGS=$(NASMFLAGS) -p "abi_enforcer.mac"
+STRUCTS_FILE=structs.h
+STRUCTS_PATH="../6\ -\ Debugging"
 
-# Corre los tests usando la implementación en C
-run_c: test_c
-	./test_c
+all: main tester abi_enforcer_tester abi_enforcer_main 
 
-# Corre los tests usando la implementación en ASM
-run_asm: test_asm
-	./test_asm
+C_OBJS := ej1_c.o
+ASM_OBJS := ej1_asm.o ej1_c.o
+ABI_OBJS := ej1_abi.o abi_enforcer_regsave.o ej1_c.o
 
-# Corre main usando la implementación en C
-run_main_c: main_c
-	./main_c
+tester: tester.o $(ASM_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@
 
-# Corre main usando la implementación en ASM
-run_main_asm: main_asm
-	./main_asm
+main: main.o $(ASM_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@
 
-run_abi: test_abi
-	./test_abi
+abi_enforcer_tester: tester.o $(ABI_OBJS)
+	$(CC) $(CFLAGS) -DWITH_ABI_ENFORCER=1 $^ -o $@
 
-# Corre los tests en valgrind usando la implementación en C
-valgrind_c: test_c
-	valgrind  --show-reachable=yes --leak-check=full --error-exitcode=1 ./test_c \
-	&& echo "No se detectaron errores de memoria"
+abi_enforcer_main: main.o $(ABI_OBJS)
+	$(CC) $(CFLAGS) -DWITH_ABI_ENFORCER=1 $^ -o $@
 
-# Corre los tests en valgrind usando la implementación en ASM
-valgrind_asm: test_asm
-	valgrind  --show-reachable=yes --leak-check=full --error-exitcode=1 ./test_asm \
-	&& echo "No se detectaron errores de memoria"
+tester.o: tester.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-valgrind_abi: test_abi
-	valgrind  --show-reachable=yes --leak-check=full --error-exitcode=1 ./test_abi \
-	&& echo "No se detectaron errores de memoria ni ABI"
+main.o: main.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Borra todos los archivos generados
-clean:
-	rm -f main_asm main_c test_c test_asm test_abi *.o
-	@cd ../../test_utils && $(MAKE) clean
-
-test_c: test.c ej1.o
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-test_asm: test.c ej1_asm.o
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-test_abi: test.c ej1_abi.o abi_enforcer_regsave.o
-	$(CC) $(CFLAGS) -DWITH_ABI_ENFORCER=1 $^ -o $@ $(LDFLAGS)
-
-main_c: main.c ej1.c
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-main_asm: main.c ej1_asm.o
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+ej1_c.o: ej1.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 ej1_asm.o: ej1.asm
-	$(AS) $(ASFLAGS) $^ -o $@
+	$(NASM) $(NASMFLAGS) $< -o $@
 
-ej1_abi.o: ej1.asm
-	@cd ../../test_utils && $(MAKE) INPUT_C=$(STRUCTS_FILE) INPUT_ASM=$< INPUT_PATH=$(STRUCTS_PATH) --no-print-directory
-	$(AS) $(ASFLAGS) -p "../../test_utils/abi_enforcer.mac" $< -o $@
+ej1_abi.o: ej1.asm abi_enforcer.mac
+	@echo Revisando offsets y tamaños de structs declarados en checkpoint...
+	@cd ../test_utils && $(MAKE) INPUT_C=$(STRUCTS_FILE) INPUT_ASM=$< INPUT_PATH=$(STRUCTS_PATH) --no-print-directory
+	@echo
+	$(NASM) $(NASM_ABI_FLAGS) $< -o $@
 
 abi_enforcer_regsave.o: abi_enforcer_regsave.asm
-	$(AS) $(ASFLAGS) $< -o $@
+	$(NASM) $(NASMFLAGS) $< -o $@
 
-.PHONY: clean run_c run_asm run_abi main_c main_asm valgrind_c valgrind_asm valgrind_abi
-
+clean:
+	rm -f *.o
+	rm -f tester tester_c main main_c abi_enforcer_tester abi_enforcer_main
+	rm -f salida.propios.*
+	@cd ../test_utils && $(MAKE) clean --no-print-directory
+	
+.PHONY: ej1_abi.o
