@@ -155,12 +155,50 @@ clean:
         rm -rf *.o $(TARGET)
 ```
 
+# Volumen 2 - Instruction Set Reference
+
+El volumen 2 es la referencia del conjunto de instrucciones, que también pueden consultar en [felixcloutier](https://www.felixcloutier.com/x86/).
+
+Ejemplo de uso: supongamos que tenemos que buscar una instrucción para sumar dos enteros de 64 bits que están en los registros RDI y RAX. Como no conocemos esta instrucción, empezamos consultando el indice del manual donde se encuentran las operaciones con su significado. Vemos que está la operación ADD, en la página 3-32.
+
+![Add en el indice del manual](../../img/2InstructionSetReferenceAdd.png)
+
+Vamos a la página 3-32. Nos encontramos con varias secciones, una es la descripción:
+
+![Add descripcion](../../img/2InstructionSetReferenceAddDescription.png)
+
+Dice que ADD realiza la suma de enteros, y ambos operandos pueden ser registros. 
+
+Además, en la sección "operation" hay un pseudocódigo de la instrucción:
+
+DEST := DEST + SRC 
+
+Parece que es lo que buscamos, pero tenemos que asegurarnos de que ambos registros puedan ser de 64 bits. Volvamos al principio donde está la tabla:
+
+![Add tabla](../../img/2InstructionSetReferenceTablaAdd.png)
+
+Lo que nos va a interesar son las columnas "Instruction" (sintaxis de la instrucción como aparecería en un programa), que en la columna "64-bit Mode" diga Valid (ya que vamos a trabajar en 64 bits en esta parte de la materia) y "Description" (una descripción de la operación).
+
+En nuestro caso vemos que tenemos ADD X, Y, donde X e Y pueden ser varias cosas distintas. Como no sabemos qué significa nada de esto, vamos a la sección 3.1.1.3 "Instruction Column in the Opcode Summary Table".
+
+Para resumir, vemos que rX significa que el operando puede ser un registro de X bits, que immX puede ser un valor inmediato de X bits y que r/mX significa que puede ser un registro o un valor de memoria. En los tres casos x es 8, 16, 32 o 64. Luego mX es un valor en memoria de X bits, pero X puede ser 1, 8, 16, 32, 64, 128.
+
+Siguiendo con el ejemplo, nos interesa sumar el valor de dos registros de 64 bits, es decir, tendríamos dos r64 (o un r64 y un r/m64). Volvamos a la tabla para ver si ADD permite esta operación.
+
+Encontramos que las únicas combinaciones de operandos que incluyen registros de 64 bits (r64 y r/m64) son estas dos:
+
+![Add resaltado en tabla](../../img/2InstructionSetReferenceTablaAddResaltado64bits.png)
+
+Vemos que podemos realizar tanto ADD RAX, RDI, como ADD RDI, RAX, ya que se puede hacer la suma entre dos registros de 64 bits y en la columna "64-bit Mode" dice Valid.
+
+
+
+
 
 
 
     
-    
-    
+
     
     
  

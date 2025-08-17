@@ -52,7 +52,7 @@ ejercicio2:
 global ejercicio3
 ejercicio3:
 	cmp rsi, 0
-	je .menosUno
+	je .vacio
 	
 	mov rcx, rdi ; array
 	mov r8, 0 ; sumatoria
@@ -73,8 +73,8 @@ ejercicio3:
 
 	jmp .loop
 
-	.menosUno:
-	mov rax, -1
+	.vacio:
+	mov rax, 64
 
 	.end:
 	ret
