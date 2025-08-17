@@ -1,6 +1,6 @@
 # Introducción
 
-Los ejercicios consisten en modificar el código de cada función para que pase todos los tests usando como base el código provisto (sin empezar desde cero).
+Los ejercicios consisten en modificar el código de cada función para que pase todos los tests (sin errores de ABI ni Valgrind) usando como base el código provisto (sin empezar desde cero).
 
 Cada ejercicio tiene la descripción del comportamiento esperado de la función, su declaración y el código en asm para corregir.
 
