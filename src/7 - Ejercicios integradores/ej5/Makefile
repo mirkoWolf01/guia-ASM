@@ -4,7 +4,7 @@ LDFLAGS = -lm
 CFLAGS= -Wall -Wextra -Wno-pedantic -O0 -g -Wno-unused-function -Wno-unused-variable -Wno-unused-parameter -no-pie -z noexecstack -I ../../test_utils/
 VPATH = .:../../test_utils
 STRUCTS_FILE = ejercicio.h
-STRUCTS_PATH = "../6\ -\ Ejercicios\ integradores/ej5"
+STRUCTS_PATH = "../7\ -\ Ejercicios\ integradores/ej5"
 
 # Crea los binarios en cuestión
 all: test_c test_asm test_abi

@@ -4,7 +4,7 @@ LDFLAGS = -lm
 CFLAGS= -Wall -Wextra -Wno-pedantic -O0 -g -Wno-unused-function -Wno-unused-variable -Wno-unused-parameter -no-pie -z noexecstack -I ../../../test_utils/
 VPATH=.:../../../test_utils
 STRUCTS_FILE=../ejs.h
-STRUCTS_PATH="../6\ -\ Ejercicios\ integradores/ej3/ej3c"
+STRUCTS_PATH="../7\ -\ Ejercicios\ integradores/ej3/ej3a"
 # Crea los binarios en cuestión
 all: test_c test_asm #test_abi
 
@@ -46,25 +46,25 @@ clean:
 	rm -f main_asm main_c test_c test_asm test_abi *.o
 	@cd ../../../test_utils && $(MAKE) clean
 
-test_c: test.c ej3c.o
+test_c: test.c ej3a.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-test_asm: test.c ej3c_asm.o
+test_asm: test.c ej3a_asm.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-test_abi: test.c ej3c_abi.o  abi_enforcer_regsave.o
+test_abi: test.c ej3a_abi.o  abi_enforcer_regsave.o
 	$(CC) $(CFLAGS) -DWITH_ABI_ENFORCER=1 $^ -o $@ $(LDFLAGS)
 
-main_c: main.c ej3c.c
+main_c: main.c ej3a.c
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-main_asm: main.c ej3c_asm.o
+main_asm: main.c ej3a_asm.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-ej3c_asm.o: ej3c.asm
+ej3a_asm.o: ej3a.asm
 	$(AS) $(ASFLAGS) $^ -o $@
 
-ej3c_abi.o: ej3c.asm
+ej3a_abi.o: ej3a.asm
 	@cd ../../../test_utils && $(MAKE) INPUT_C=$(STRUCTS_FILE) INPUT_ASM=$< INPUT_PATH=$(STRUCTS_PATH) --no-print-directory
 	$(AS) $(ASFLAGS) -p "../../../test_utils/abi_enforcer.mac" $< -o $@
 

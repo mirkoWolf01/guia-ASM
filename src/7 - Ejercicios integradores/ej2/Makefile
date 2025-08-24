@@ -3,8 +3,8 @@ ASFLAGS = -felf64 -Fdwarf -g
 LDFLAGS = -lm
 CFLAGS= -Wall -Wextra -pedantic -O0 -g -Wno-unused-variable -Wno-unused-parameter -no-pie -z noexecstack -I ../../test_utils/
 VPATH=.:../../test_utils
-STRUCTS_FILE=ej1.h
-STRUCTS_PATH="../6\ -\ Ejercicios\ integradores/ej1"
+STRUCTS_FILE=ej2.h
+STRUCTS_PATH="../7\ -\ Ejercicios\ integradores/ej2"
 # Crea los binarios en cuestión
 all: test_c test_asm test_abi
 
@@ -35,22 +35,22 @@ valgrind_abi: test_abi
 
 # Borra todos los archivos generados
 clean:
-	rm -f test_c test_asm test_abi test.o ej1_asm.o ej1_abi.o abi_enforcer_regsave.o
+	rm -f test_c test_asm test_abi test.o ej2_asm.o ej2_abi.o abi_enforcer_regsave.o
 	@cd ../../test_utils && $(MAKE) clean
 
-test_c: test.c ej1.c
+test_c: test.c ej2.c
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-test_asm: test.c ej1_asm.o
+test_asm: test.c ej2_asm.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-test_abi: test.o ej1_abi.o abi_enforcer_regsave.o
+test_abi: test.o ej2_abi.o abi_enforcer_regsave.o
 	$(CC) $(CFLAGS) -DWITH_ABI_ENFORCER=1 $^ -o $@ $(LDFLAGS)
 
-ej1_asm.o: ej1.asm
+ej2_asm.o: ej2.asm
 	$(AS) $(ASFLAGS) $^ -o $@
 
-ej1_abi.o: ej1.asm
+ej2_abi.o: ej2.asm
 	@cd ../../test_utils && $(MAKE) INPUT_C=$(STRUCTS_FILE) INPUT_ASM=$< INPUT_PATH=$(STRUCTS_PATH) --no-print-directory
 	$(AS) $(ASFLAGS) -p "../../test_utils/abi_enforcer.mac" $< -o $@
 
