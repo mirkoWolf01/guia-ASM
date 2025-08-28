@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "../test-utils.h"
-#include "ej1.h"
+#include "Debugging.h"
 
 // Cuenta cuántos tests corrieron exitosamente.
 uint64_t successful_tests = 0;

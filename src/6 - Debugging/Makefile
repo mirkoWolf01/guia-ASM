@@ -8,9 +8,9 @@ STRUCTS_PATH="../6\ -\ Debugging"
 
 all: main tester abi_enforcer_tester abi_enforcer_main 
 
-C_OBJS := ej1_c.o
-ASM_OBJS := ej1_asm.o ej1_c.o
-ABI_OBJS := ej1_abi.o abi_enforcer_regsave.o ej1_c.o
+C_OBJS := Debugging_c.o
+ASM_OBJS := Debugging_asm.o Debugging_c.o
+ABI_OBJS := Debugging_abi.o abi_enforcer_regsave.o Debugging_c.o
 
 tester: tester.o $(ASM_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
@@ -30,13 +30,13 @@ tester.o: tester.c
 main.o: main.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-ej1_c.o: ej1.c
+Debugging_c.o: Debugging.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-ej1_asm.o: ej1.asm
+Debugging_asm.o: Debugging.asm
 	$(NASM) $(NASMFLAGS) $< -o $@
 
-ej1_abi.o: ej1.asm abi_enforcer.mac
+Debugging_abi.o: Debugging.asm abi_enforcer.mac
 	@echo Revisando offsets y tamaños de structs declarados en checkpoint...
 	@cd ../test_utils && $(MAKE) INPUT_C=$(STRUCTS_FILE) INPUT_ASM=$< INPUT_PATH=$(STRUCTS_PATH) --no-print-directory
 	@echo
@@ -51,4 +51,4 @@ clean:
 	rm -f salida.propios.*
 	@cd ../test_utils && $(MAKE) clean --no-print-directory
 	
-.PHONY: ej1_abi.o
+.PHONY: Debugging_abi.o

@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "../test-utils.h"
-#include "ej1.h"
+#include "Debugging.h"
 
 int main(int argc, char* argv[]) {
 	

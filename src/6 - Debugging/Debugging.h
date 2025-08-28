@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "structs.h" //define estructuras de datos de los ejercicios
 
-// Marca el ejercicio 1A como hecho (`true`) o pendiente (`false`).
+// Marca el cada ejercicio como hecho (`true`) o pendiente (`false`).
 extern bool EJERCICIO_1_HECHO;
 extern bool EJERCICIO_2_HECHO;
 extern bool EJERCICIO_3_HECHO;

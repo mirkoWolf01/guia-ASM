@@ -1,8 +1,8 @@
 # Ejercicios integradores
 
-Estos ejercicios presentan una estructura y dificultad similar a lo que será evaluado en el primer parcial. Recomendamos hacerlos una vez que hayan visto todos los temas anteriores de la guía.
+Estos ejercicios presentan una estructura y dificultad similar a lo que será evaluado en el primer parcial. Recomendamos hacerlos una vez que hayan visto todos los temas anteriores de la guía y, si pueden, hacerlos simulando la situación de examen.
 
-Para todos los ejercicios recomendamos primero implementarlos en C, y una vez que pasen los tests escribir esos algoritmos en ASM.
+Para todos los ejercicios sugerimos primero implementarlos en C, y una vez que pasen los tests escribir esos algoritmos en ASM.
 
 Hay un esqueleto para cada ejercicio con los tests correspondientes y una plantilla para completar implementaciones en C/ASM de cada inciso.
 
