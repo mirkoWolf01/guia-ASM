@@ -138,7 +138,7 @@ void check_plist(){
 	n1->next = n2;
 	n2->next = n3;
 
-	printf("Cantidad de elems en packed: %d\n",cantidad_total_de_elementos_packed(lst));
+	printf("Cantidad de elementos en packed: %d\n",cantidad_total_de_elementos_packed(lst));
 
 	// Libero memoria
 	free(arr1);
