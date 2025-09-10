@@ -1,5 +1,8 @@
 extern sumar_c
 extern restar_c
+
+%include "abi_enforcer.mac"
+
 ;########### SECCION DE DATOS
 section .data
 
@@ -151,16 +154,17 @@ alternate_sum_8:
 
 ; SUGERENCIA: investigar uso de instrucciones para convertir enteros a floats y viceversa
 ;void product_2_f(uint32_t * destination, uint32_t x1, float f1);
-;registros: destination[RDI], x1[ESI], f1[XMM0]
+;registros: destination[EDI], x1[ESI], f1[XMM0]
 product_2_f:
   push RBP ;pila alineada
   mov RBP, RSP ;strack frame armado
 
-  cvtsi2ss xmm1, ESI        ; convierte a → float en xmm1
+  cvtss2sd xmm0, xmm0        ; convierte float a double en xmm1
+  cvtsi2sd xmm1, ESI        ; convierte int a double en xmm1
+  
+  mulsd xmm0, xmm1          ; xmm0 = xmm0 * xmm1  (b * a)
 
-  mulss xmm0, xmm1          ; xmm0 = xmm0 * xmm1  (b * a)
-
-  cvttss2si eax, xmm0       ; convertir a entero con truncamiento
+  cvttsd2si eax, xmm0       ; convertir a entero con truncamiento
 
   mov [rdi], eax            ; *destination = resultado
 
