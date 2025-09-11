@@ -1,4 +1,4 @@
-
+%include "abi_enforcer.mac"
 
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar las definiciones (serán revisadas por ABI enforcer):
@@ -47,12 +47,11 @@ cantidad_total_de_elementos:
 	; RDX tamaño del array del nodo actual
 	; RAX resultado parcial
 	.ciclo:
-		mov RDX, [RDI + NODO_OFFSET_LONGITUD]; muevo el valor de longitud actual a RDX
-		add RAX, RDX ; Sumo el la longitud actual con el res parcial
-
+		mov EDX, DWORD [RDI + NODO_OFFSET_LONGITUD]; muevo el valor de longitud actual a RDX
+		add EAX, EDX ; Sumo el la longitud actual con el res parcial
 		mov RDI, [RDI + NODO_OFFSET_NEXT]
 
-		cmp rdi, 0
+		cmp RDI, 0
 		jne .ciclo
 
 	;epílogo
@@ -62,10 +61,6 @@ cantidad_total_de_elementos:
 ;extern uint32_t cantidad_total_de_elementos_packed(packed_lista_t* lista);
 ;registros: lista[EDI]
 cantidad_total_de_elementos_packed:
-	;prólogo
-	push RBP
-	mov RBP, RSP
-	
 	mov RDI, [RDI + PACKED_LISTA_OFFSET_HEAD]
 
 	XOR RAX, RAX ;usamos RAX como lugar donde voy sumando, lo dejo en 0.
@@ -75,15 +70,14 @@ cantidad_total_de_elementos_packed:
 	; RDX tamaño del array del nodo actual
 	; RAX resultado parcial
 	.ciclo:
-		mov RDX, [RDI + PACKED_NODO_OFFSET_LONGITUD]; muevo el valor de longitud actual a RDX
-		add RAX, RDX ; Sumo el la longitud actual con el res parcial
+		; IMPORTANTE RECORDAR QUE SI DEVUELVE 32 BITS, EDX SE TIENE QUE GUARDAR COMO TAL.
+		mov EDX, DWORD [RDI + PACKED_NODO_OFFSET_LONGITUD]; muevo el valor de longitud actual a RDX
+		add EAX, EDX ; Sumo el la longitud actual con el res parcial
 
 		mov RDI, [RDI + PACKED_NODO_OFFSET_NEXT]
 
-		cmp rdi, 0
+		cmp RDI, 0
 		jne .ciclo
 
-	;epílogo
-	pop RBP
 	ret
 
