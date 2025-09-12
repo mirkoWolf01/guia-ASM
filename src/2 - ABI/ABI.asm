@@ -1,8 +1,6 @@
 extern sumar_c
 extern restar_c
 
-%include "abi_enforcer.mac"
-
 ;########### SECCION DE DATOS
 section .data
 

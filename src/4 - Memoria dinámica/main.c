@@ -8,6 +8,20 @@
 #include "Memoria.h"
 
 int main() {
-	/* Acá pueden realizar sus propias pruebas */
+	assert(strCmp("marcelo", "marca") == -1);
+
+	char* str = "mamaguebo";
+	printf("Largo de %s: %d\n", str, strLen(str));
+
+	char* copia = strClone(str);
+
+	printf("Valor del str copiado: %s\n", copia);
+
+	strDelete(copia);
+
+	FILE* archivo = fopen("ARCHIVO MARCELISITICO", "w");
+
+	// ESTO LO ESTOY HACIENDO DESPUES DE ESTAR ESTUDIANDO POR MAS DE 8 HORAS SEGUIDAS IGNORAR LOS NOMBRE RAROS
+	strPrint("mamaguebazo mistico ancestral", archivo);
 	return 0;
 }

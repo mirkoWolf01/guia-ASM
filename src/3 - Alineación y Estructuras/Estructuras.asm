@@ -1,5 +1,3 @@
-%include "abi_enforcer.mac"
-
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar las definiciones (serán revisadas por ABI enforcer):
 NODO_OFFSET_NEXT EQU 0
