@@ -510,6 +510,10 @@ void testResults1C(mapa_t esperado, mapa_t resultado, bool cantidad_refs_correct
 	bool iguales = cantidad_refs_correcta;
 	uint32_t i;
 	for (i=0; iguales && i<255*255; i++) {
+		uint32_t val1 = hash_test(((attackunit_t**) esperado)[i]);
+		uint32_t val2 = hash_test(((attackunit_t**) resultado)[i]);
+		attackunit_t * at1 = ((attackunit_t**) resultado)[i];
+		attackunit_t * at2 = ((attackunit_t**) esperado)[i];
 		iguales = iguales && (hash_test(((attackunit_t**) esperado)[i]) == hash_test(((attackunit_t**) resultado)[i]));
 	}
 
