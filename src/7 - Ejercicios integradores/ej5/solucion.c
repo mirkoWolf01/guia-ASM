@@ -27,6 +27,10 @@ bool EJERCICIO_2_HECHO = true;
  */
 bool EJERCICIO_3_HECHO = true;
 
+#define NAME_SIZE 12
+
+#define ANCHO_CAMPO 10
+#define ALTO_CAMPO 5
 /**
  * Dada una secuencia de acciones determinar si hay alguna cuya carta tenga un
  * nombre idéntico (mismos contenidos, no mismo puntero) al pasado por
@@ -37,7 +41,18 @@ bool EJERCICIO_3_HECHO = true;
  *   - El valor `0` es `false`
  *   - Cualquier otro valor es `true`
  */
-bool hay_accion_que_toque(accion_t* accion, char* nombre) {
+bool hay_accion_que_toque(accion_t *accion, char *nombre)
+{
+	accion_t *accion_actual = accion;
+	while (accion_actual != NULL)
+	{
+		carta_t *carta = accion_actual->destino;
+
+		if (!strncmp(carta->nombre, nombre, NAME_SIZE))
+			return true;
+
+		accion_actual = accion_actual->siguiente;
+	}
 	return false;
 }
 
@@ -62,7 +77,26 @@ bool hay_accion_que_toque(accion_t* accion, char* nombre) {
  * la primera acción, segundo la segunda acción, etc). Las acciones asumen este
  * orden de ejecución.
  */
-void invocar_acciones(accion_t* accion, tablero_t* tablero) {
+
+void invocar_acciones(accion_t *accion, tablero_t *tablero)
+{
+	accion_t *accion_actual = accion;
+	while (accion_actual != NULL)
+	{
+		carta_t *carta_destino = accion_actual->destino;
+
+		if (carta_destino->en_juego)
+		{
+			void (*aplicar_accion)(tablero_t *tablero, carta_t *carta) = accion_actual->invocar;
+			aplicar_accion(tablero, carta_destino);
+			if (carta_destino->en_juego && carta_destino->vida <= 0)
+			{
+				carta_destino->en_juego = false;
+			}
+		}
+
+		accion_actual = accion_actual->siguiente;
+	}
 }
 
 /**
@@ -82,6 +116,24 @@ void invocar_acciones(accion_t* accion, tablero_t* tablero) {
  * El resultado debe ser escrito en las posiciones de memoria proporcionadas
  * como parámetro.
  */
-void contar_cartas(tablero_t* tablero, uint32_t* cant_rojas, uint32_t* cant_azules) {
+void contar_cartas(tablero_t *tablero, uint32_t *cant_rojas, uint32_t *cant_azules)
+{
 	*cant_rojas = *cant_azules = 0;
+
+	for (int i = 0; i < ALTO_CAMPO; i++)
+	{
+		for (int j = 0; j < ANCHO_CAMPO; j++)
+		{
+			carta_t *carta = tablero->campo[i][j];
+
+			if (carta)
+			{
+				// NOTA: NO ES LO MISMO QUE HACER *cant_azules ++;
+				if (carta->en_juego && carta->jugador == JUGADOR_AZUL)
+					*cant_azules = *cant_azules +1;
+				else if (carta->en_juego && carta->jugador == JUGADOR_ROJO)
+					*cant_rojas = *cant_rojas +1;
+			}
+		}
+	}
 }
